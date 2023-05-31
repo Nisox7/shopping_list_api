@@ -1,5 +1,5 @@
 import pymysql
-from env import database_user,database_table,database_host,database_name,database_password
+from env import database_user,database_host,database_name,database_password
 
 def connect():
     try:
@@ -16,10 +16,25 @@ def connect():
         print("Ocurrió un error al conectar: ", e)
 
     
+#--------------------------
+
+def create_table_db(table):
+
+    ddbb = connect()
+    connection=ddbb[0]
+    cursor=ddbb[1]
+
+    try:
+        cursor.execute(f"CREATE TABLE {table} (ITEM_ID VARCHAR(350), ITEM VARCHAR(350), TS TIMESTAMP DEFAULT current_timestamp);")
+        connection.commit()
+        print(f"created table: {table}")
+        connection.close()
+    except Exception as e:
+        print(f"error writing db:\n{e}")
 
 #--------------------------
 
-def write_db(item, item_id):
+def write_db(item, item_id, database_table):
     
     ddbb = connect()
     connection=ddbb[0]
@@ -35,7 +50,7 @@ def write_db(item, item_id):
 
 #--------------------------
 
-def read_db(args):
+def read_db(args, database_table):
 
     ddbb = connect()
     connection=ddbb[0]
@@ -49,7 +64,9 @@ def read_db(args):
 
     return read
 
-def delete_from_db(item_id):
+
+
+def delete_from_db(item_id, database_table):
     ddbb = connect()
     connection=ddbb[0]
     cursor=ddbb[1]
@@ -61,3 +78,49 @@ def delete_from_db(item_id):
         connection.close()
     except Exception as e:
         print(f"error deleting item on db:\n{e}")
+
+
+def get_tables_from_db():
+    tables_list=[]
+
+    ddbb = connect()
+    connection=ddbb[0]
+    cursor=ddbb[1]
+
+    cursor.execute("SHOW TABLES")
+    tables = cursor.fetchall()
+
+    connection.close()
+
+    for table in tables:
+        tables_list.append(table[0])
+
+    return tables_list
+
+
+def remove_table_from_db(table):
+    ddbb = connect()
+    connection=ddbb[0]
+    cursor=ddbb[1]
+
+    try:
+        cursor.execute(f"DROP TABLE {table}")
+        connection.commit()
+        #print("db written correctly")
+        connection.close()
+    except Exception as e:
+        print(f"error writing db:\n{e}")
+
+
+
+def execute_on_db(entry):
+    ddbb = connect()
+    connection=ddbb[0]
+    cursor=ddbb[1]
+
+    cursor.execute(entry)
+    read = cursor.fetchall()
+
+    connection.close()
+
+    return read
